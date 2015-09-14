@@ -1,7 +1,7 @@
 {
   "name": "generator-delphiki-symfony",
   "version": "1.0.0",
-  "description": "Scaffolds a standard Symfony2 application with Yeoman",
+  "description": "Scaffolds a standard Symfony2 application with Yeoman with extra bundles",
   "license": "MIT",
   "main": "app/index.js",
   "repository": "delphiki/generator-delphiki-symfony",
