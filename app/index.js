@@ -559,28 +559,6 @@ module.exports = yeoman.generators.Base.extend({
       var appKernelPath = 'app/AppKernel.php';
       var appKernelContents = this.readFileAsString(appKernelPath);
 
-      var newBundles = [];
-
-      if (this.migrationbundle) {
-        newBundles.push('new Doctrine\\Bundle\\MigrationsBundle\\DoctrineMigrationsBundle()');
-      }
-      if (this.novawayfilemanagementbundle) {
-        newBundles.push('new \\Novaway\\Bundle\\FileManagementBundle\\NovawayFileManagementBundle()');
-      }
-      if (this.skwîprojectbasebundle) {
-        newBundles.push('new \\Skwi\\Bundle\\ProjectBaseBundle\\SkwiProjectBaseBundle()');
-      }
-
-      if (0 < newBundles.length) {
-        appKernelContents = appKernelContents.replace('new AppBundle\\AppBundle(),', 'new AppBundle\\AppBundle(),\n\n            ' + newBundles.join(',\n            ') +',');
-      }
-
-      var newDevBundles = [];
-
-      if (this.fixturebundle) {
-        newDevBundles.push('new Doctrine\\Bundle\\FixturesBundle\\DoctrineFixturesBundle()');
-      }
-
       var newAppKernelContents = appKernelContents.replace('new Symfony\\Bundle\\AsseticBundle\\AsseticBundle(),', '');
       fs.writeFileSync(appKernelPath, newAppKernelContents);
     },
@@ -598,6 +576,54 @@ module.exports = yeoman.generators.Base.extend({
       if (this.skwîprojectbasebundle) {
         this.spawnCommand('composer', ['require', 'skwi/project-base-bundle']);
       }
+    },
+
+    updateConfig: function () {
+      var done = this.async();
+
+      var conf = yaml.safeLoad(fs.readFileSync('app/config/config.yml'));
+
+      if (this.novawayfilemanagementbundle) {
+        var bundleConf = yaml.safeLoad(fs.readFileSync(this.templatePath('_config_novaway_filemanagementbundle.yml')));
+        conf.novaway_file_management = bundleConf.novaway_file_management;
+      }
+
+      if (this.skwîprojectbasebundle) {
+        var bundleConf = yaml.safeLoad(fs.readFileSync(this.templatePath('_config_skwi_projectbasebundle.yml')));
+        conf.skwi_project_base = bundleConf.skwi_project_base;
+      }
+
+      var newConf = yaml.dump(conf, {indent: 4});
+      fs.writeFileSync('app/config/config.yml', newConf);
+
+      done();
+    },
+
+     updateAppKernelPostComposerInstall: function () {
+      var appKernelPath = 'app/AppKernel.php';
+      var appKernelContents = this.readFileAsString(appKernelPath);
+
+      var newBundles = [];
+      if (this.migrationbundle) {
+        newBundles.push('new Doctrine\\Bundle\\MigrationsBundle\\DoctrineMigrationsBundle()');
+      }
+      if (this.novawayfilemanagementbundle) {
+        newBundles.push('new \\Novaway\\Bundle\\FileManagementBundle\\NovawayFileManagementBundle()');
+      }
+      if (this.skwîprojectbasebundle) {
+        newBundles.push('new \\Skwi\\Bundle\\ProjectBaseBundle\\SkwiProjectBaseBundle()');
+      }
+
+      if (0 < newBundles.length) {
+        appKernelContents = appKernelContents.replace('new AppBundle\\AppBundle(),', 'new AppBundle\\AppBundle(),\n\n            ' + newBundles.join(',\n            ') +',');
+      }
+
+      var newDevBundles = [];
+      if (this.fixturebundle) {
+        newDevBundles.push('new Doctrine\\Bundle\\FixturesBundle\\DoctrineFixturesBundle()');
+      }
+
+      fs.writeFileSync(appKernelPath, appKernelContents);
     },
 
     addBootStrapSass: function() {

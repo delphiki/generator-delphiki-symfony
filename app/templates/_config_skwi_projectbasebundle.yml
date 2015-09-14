@@ -1,0 +1,6 @@
+skwi_project_base:
+    entity_bundle_name: AppBundle # Default bundle when extending BaseManager (see below)
+    entity_bundle_namespace: AppBundle # Default bundle namespace
+    password_encoder: sha512 # Password encoder method
+    pager_max_per_page: 10 # Default max items per page when using paginator in the BaseManager
+    kernel_root_dir: '%kernel.root_dir%'
