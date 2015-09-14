@@ -332,7 +332,17 @@ module.exports = yeoman.generators.Base.extend({
       {
         name: 'DoctrineMigrationsBundle',
         value: 'migrationbundle',
-        checked: false
+        checked: true
+      },
+      {
+        name: 'NovawayFileManagementBundle',
+        value: 'novawayfilemanagementbundle',
+        checked: true
+      },
+      {
+        name: 'SkwiProjectBaseBundle',
+        value: 'skwîprojectbasebundle',
+        checked: true
       }
       ]
 
@@ -345,6 +355,8 @@ module.exports = yeoman.generators.Base.extend({
 
       this.fixturebundle = hasFeature('fixturebundle');
       this.migrationbundle = hasFeature('migrationbundle');
+      this.novawayfilemanagementbundle = hasFeature('novawayfilemanagementbundle');
+      this.skwîprojectbasebundle = hasFeature('skwîprojectbasebundle');
       done();
     }.bind(this));
   },
@@ -547,6 +559,28 @@ module.exports = yeoman.generators.Base.extend({
       var appKernelPath = 'app/AppKernel.php';
       var appKernelContents = this.readFileAsString(appKernelPath);
 
+      var newBundles = [];
+
+      if (this.migrationbundle) {
+        newBundles.push('new Doctrine\\Bundle\\MigrationsBundle\\DoctrineMigrationsBundle()');
+      }
+      if (this.novawayfilemanagementbundle) {
+        newBundles.push('new \\Novaway\\Bundle\\FileManagementBundle\\NovawayFileManagementBundle()');
+      }
+      if (this.skwîprojectbasebundle) {
+        newBundles.push('new \\Skwi\\Bundle\\ProjectBaseBundle\\SkwiProjectBaseBundle()');
+      }
+
+      if (0 < newBundles.length) {
+        appKernelContents = appKernelContents.replace('new AppBundle\\AppBundle(),', 'new AppBundle\\AppBundle(),\n\n            ' + newBundles.join(',\n            ') +',');
+      }
+
+      var newDevBundles = [];
+
+      if (this.fixturebundle) {
+        newDevBundles.push('new Doctrine\\Bundle\\FixturesBundle\\DoctrineFixturesBundle()');
+      }
+
       var newAppKernelContents = appKernelContents.replace('new Symfony\\Bundle\\AsseticBundle\\AsseticBundle(),', '');
       fs.writeFileSync(appKernelPath, newAppKernelContents);
     },
@@ -557,6 +591,12 @@ module.exports = yeoman.generators.Base.extend({
       }
       if (this.migrationbundle) {
         this.spawnCommand('composer', ['require', 'doctrine/doctrine-migrations-bundle']);
+      }
+      if (this.novawayfilemanagementbundle) {
+        this.spawnCommand('composer', ['require', 'novaway/filemanagementbundle 3.*']);
+      }
+      if (this.skwîprojectbasebundle) {
+        this.spawnCommand('composer', ['require', 'skwi/project-base-bundle']);
       }
     },
 
