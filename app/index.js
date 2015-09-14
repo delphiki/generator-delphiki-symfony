@@ -599,7 +599,7 @@ module.exports = yeoman.generators.Base.extend({
       done();
     },
 
-     updateAppKernelPostComposerInstall: function () {
+    updateAppKernelPostComposerInstall: function () {
       var appKernelPath = 'app/AppKernel.php';
       var appKernelContents = this.readFileAsString(appKernelPath);
 
@@ -621,6 +621,13 @@ module.exports = yeoman.generators.Base.extend({
       var newDevBundles = [];
       if (this.fixturebundle) {
         newDevBundles.push('new Doctrine\\Bundle\\FixturesBundle\\DoctrineFixturesBundle()');
+      }
+
+      if (0 < newDevBundles.length) {
+        appKernelContents = appKernelContents.replace(
+          '$bundles[] = new Sensio\\Bundle\\GeneratorBundle\\SensioGeneratorBundle();',
+          '$bundles[] = new Sensio\\Bundle\\GeneratorBundle\\SensioGeneratorBundle();\n\n            $bundles[] = ' + newDevBundles.join(';\n            $bundles[] = ') +';'
+        );
       }
 
       fs.writeFileSync(appKernelPath, appKernelContents);
