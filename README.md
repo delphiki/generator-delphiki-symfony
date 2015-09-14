@@ -1,15 +1,13 @@
-JoliSymfony - Symfony2
+delphiki Symfony2 generator - Based on [JoliSymfony](https://github.com/jolicode/generator-joli-symfony) by JoliCode
 =====================
-[![NPM Version](https://img.shields.io/npm/v/generator-joli-symfony.svg?style=flat-square)](https://www.npmjs.com/package/generator-joli-symfony)
-[![Download Month](https://img.shields.io/npm/dm/generator-joli-symfony.svg?style=flat-square)](https://www.npmjs.com/package/generator-joli-symfony)
 
-generator-joli-symfony is a [Yeoman Generator](http://yeoman.io/generators/) to scaffold Symfony2 projects with sensible defaults, common bundles and frontend tools.
+generator-delphiki-symfony is a [Yeoman Generator](http://yeoman.io/generators/) to scaffold Symfony2 projects with sensible defaults, common bundles and frontend tools.
+
+It's a fork of the joli-symfony generator, with extra bundles added:
+- [NovawayFileManagementBundle](https://github.com/novaway/NovawayFileManagementBundle)
+- [SkwiProjectBaseBundle](https://github.com/skwi/SkwiProjectBaseBundle)
 
 It will create a new Symfony project, remove Assetic and replace it with either Gulp, Grunt or Brunch.
-
-### Demo
-
-![](http://i.imgur.com/idCv3zq.gif)
 
 ## Dependencies
 
@@ -60,6 +58,8 @@ Optional dependencies :
 * Symfony2 Bundle:
  * [DoctrineFixturesBundle](https://github.com/doctrine/DoctrineFixturesBundle)
  * [DoctrineMigrationsBundle](https://github.com/doctrine/DoctrineMigrationsBundle)
+ * [NovawayFileManagementBundle](https://github.com/novaway/NovawayFileManagementBundle)
+ * [SkwiProjectBaseBundle](https://github.com/skwi/SkwiProjectBaseBundle)
 * Bootstrap-sass-official
 
 ## Default workflow
@@ -85,8 +85,8 @@ Assets are stored in the **app/Resources/** folder :
 ## Getting Started
 
 - Install: `npm install -g yo`
-- Install: `npm install -g generator-joli-symfony`
-- Run: `yo joli-symfony --force`
+- Install: `npm install -g generator-delphiki-symfony`
+- Run: `yo delphiki-symfony --force`
 
 ## Contribute
 

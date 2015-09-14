@@ -1,15 +1,22 @@
 {
-  "name": "generator-joli-symfony",
+  "name": "generator-delphiki-symfony",
   "version": "1.0.0",
   "description": "Scaffolds a standard Symfony2 application with Yeoman",
   "license": "MIT",
   "main": "app/index.js",
-  "repository": "jolicode/generator-joli-symfony",
+  "repository": "delphiki/generator-delphiki-symfony",
   "author": {
     "name": "Laurent Brunet",
     "email": "",
     "url": "https://github.com/lbrunet"
   },
+  "contributos": [
+    {
+      "name": "Julien Villetorte",
+      "email": "",
+      "url": "https://github.com/delphiki"
+    }
+  ],
   "engines": {
     "node": ">=0.10.0"
   },
