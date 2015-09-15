@@ -563,74 +563,103 @@ module.exports = yeoman.generators.Base.extend({
       fs.writeFileSync(appKernelPath, newAppKernelContents);
     },
 
-    addBundleComposer: function() {
+    addBundles: function() {
+      var that = this;
+
+      this.bundles = [];
+
+      this.composerRequire = function() {
+        var command = ['require'];
+        for (var i = 0; i < this.bundles.length; i++) {
+          var b = this.bundles[i];
+          command.push(b.name+(b.hasOwnProperty('version') ? ':'+b.version : ''));
+        }
+
+        this
+          .spawnCommand('composer', command)
+          .on('close', function() {
+            that.addBundlesToAppKernel();
+            that.addBundlesConfig();
+          })
+        ;
+      };
+
+
+      this.addBundlesToAppKernel = function() {
+        var appKernelPath = 'app/AppKernel.php';
+        var appKernelContents = that.readFileAsString(appKernelPath);
+
+        var inits = [];
+        var initsDev = [];
+
+        for (var i = 0; i < this.bundles.length; i++) {
+          this.bundles[i].dev ? initsDev.push(this.bundles[i].kernelInit) : inits.push(this.bundles[i].kernelInit);
+        }
+
+        if (inits.length) {
+          appKernelContents = appKernelContents.replace('new AppBundle\\AppBundle(),', 'new AppBundle\\AppBundle(),\n\n            ' + inits.join(',\n            ') +',');
+        }
+
+        if (initsDev.length) {
+          appKernelContents = appKernelContents.replace(
+            '$bundles[] = new Sensio\\Bundle\\GeneratorBundle\\SensioGeneratorBundle();',
+            '$bundles[] = new Sensio\\Bundle\\GeneratorBundle\\SensioGeneratorBundle();\n\n            $bundles[] = ' + initsDev.join(';\n            $bundles[] = ') +';'
+          );
+        }
+
+        fs.writeFileSync(appKernelPath, appKernelContents);
+      };
+
+      this.addBundlesConfig = function() {
+        var conf = yaml.safeLoad(fs.readFileSync('app/config/config.yml'));
+
+        for (var i = 0; i < this.bundles.length; i++) {
+          var b = this.bundles[i];
+          if (b.hasOwnProperty('configTemplate') && b.hasOwnProperty('configKey')) {
+            var bundleConf = yaml.safeLoad(fs.readFileSync(that.templatePath(b.configTemplate)));
+            conf[b.configKey] = bundleConf[b.configKey];
+          }
+        }
+
+        var newConf = yaml.dump(conf, {indent: 4});
+        fs.writeFileSync('app/config/config.yml', newConf);
+      };
+
       if (this.fixturebundle) {
-        this.spawnCommand('composer', ['require', 'doctrine/doctrine-fixtures-bundle']);
+        this.bundles.push({
+          name: 'doctrine/doctrine-fixtures-bundle',
+          dev: true,
+          kernelInit: 'new Doctrine\\Bundle\\FixturesBundle\\DoctrineFixturesBundle()'
+        });
       }
       if (this.migrationbundle) {
-        this.spawnCommand('composer', ['require', 'doctrine/doctrine-migrations-bundle']);
+        this.bundles.push({
+          name: 'doctrine/doctrine-migrations-bundle',
+          dev: false,
+          kernelInit: 'new Doctrine\\Bundle\\MigrationsBundle\\DoctrineMigrationsBundle()'
+        });
       }
       if (this.novawayfilemanagementbundle) {
-        this.spawnCommand('composer', ['require', 'novaway/filemanagementbundle 3.*']);
+        this.bundles.push({
+          name: 'novaway/filemanagementbundle',
+          version: '3.*',
+          dev: false,
+          kernelInit: 'new \\Novaway\\Bundle\\FileManagementBundle\\NovawayFileManagementBundle()',
+          configTemplate: '_config_novaway_filemanagementbundle.yml',
+          configKey: 'novaway_file_management'
+        });
       }
       if (this.skwîprojectbasebundle) {
-        this.spawnCommand('composer', ['require', 'skwi/project-base-bundle']);
-      }
-    },
-
-    updateConfig: function () {
-      var done = this.async();
-
-      var conf = yaml.safeLoad(fs.readFileSync('app/config/config.yml'));
-
-      if (this.novawayfilemanagementbundle) {
-        var bundleConf = yaml.safeLoad(fs.readFileSync(this.templatePath('_config_novaway_filemanagementbundle.yml')));
-        conf.novaway_file_management = bundleConf.novaway_file_management;
+        this.bundles.push({
+          name: 'skwi/project-base-bundle',
+          dev: false,
+          kernelInit: 'new \\Skwi\\Bundle\\ProjectBaseBundle\\SkwiProjectBaseBundle()',
+          configTemplate: '_config_skwi_projectbasebundle.yml',
+          configKey: 'skwi_project_base'
+        });
       }
 
-      if (this.skwîprojectbasebundle) {
-        var bundleConf = yaml.safeLoad(fs.readFileSync(this.templatePath('_config_skwi_projectbasebundle.yml')));
-        conf.skwi_project_base = bundleConf.skwi_project_base;
-      }
-
-      var newConf = yaml.dump(conf, {indent: 4});
-      fs.writeFileSync('app/config/config.yml', newConf);
-
-      done();
-    },
-
-    updateAppKernelPostComposerInstall: function () {
-      var appKernelPath = 'app/AppKernel.php';
-      var appKernelContents = this.readFileAsString(appKernelPath);
-
-      var newBundles = [];
-      if (this.migrationbundle) {
-        newBundles.push('new Doctrine\\Bundle\\MigrationsBundle\\DoctrineMigrationsBundle()');
-      }
-      if (this.novawayfilemanagementbundle) {
-        newBundles.push('new \\Novaway\\Bundle\\FileManagementBundle\\NovawayFileManagementBundle()');
-      }
-      if (this.skwîprojectbasebundle) {
-        newBundles.push('new \\Skwi\\Bundle\\ProjectBaseBundle\\SkwiProjectBaseBundle()');
-      }
-
-      if (0 < newBundles.length) {
-        appKernelContents = appKernelContents.replace('new AppBundle\\AppBundle(),', 'new AppBundle\\AppBundle(),\n\n            ' + newBundles.join(',\n            ') +',');
-      }
-
-      var newDevBundles = [];
-      if (this.fixturebundle) {
-        newDevBundles.push('new Doctrine\\Bundle\\FixturesBundle\\DoctrineFixturesBundle()');
-      }
-
-      if (0 < newDevBundles.length) {
-        appKernelContents = appKernelContents.replace(
-          '$bundles[] = new Sensio\\Bundle\\GeneratorBundle\\SensioGeneratorBundle();',
-          '$bundles[] = new Sensio\\Bundle\\GeneratorBundle\\SensioGeneratorBundle();\n\n            $bundles[] = ' + newDevBundles.join(';\n            $bundles[] = ') +';'
-        );
-      }
-
-      fs.writeFileSync(appKernelPath, appKernelContents);
+      this.composerRequire();
     },
 
     addBootStrapSass: function() {
